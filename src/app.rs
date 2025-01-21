@@ -5,9 +5,10 @@ use crossterm::{
 };
 use ratatui::{
     backend::CrosstermBackend,
-    layout::Constraint,
+    layout::{Constraint, Direction, Layout},
     style::{Color, Style},
-    widgets::{Row, Table},
+    text::{Line, Span},
+    widgets::{Paragraph, Row, Table},
     Terminal,
 };
 use std::{
@@ -54,8 +55,15 @@ impl App {
     ) -> io::Result<Option<String>> {
         loop {
             terminal.draw(|frame| {
-                let area = frame.area();
-                let height = area.height as usize;
+                let chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([
+                        Constraint::Min(3),    // Table takes minimum space needed
+                        Constraint::Length(1), // Instructions take 2 rows
+                    ])
+                    .split(frame.area());
+
+                let height = chunks[0].height as usize;
 
                 let start_idx = self.selected_idx.saturating_sub(height - 1);
                 let end_idx = start_idx + height;
@@ -66,7 +74,7 @@ impl App {
                     .map(|(i, cmd)| {
                         let index = self.num_commands.saturating_sub(start_idx + i).to_string();
                         let style = if start_idx + i == self.selected_idx {
-                            Style::default().bg(Color::Gray)
+                            Style::default().bg(Color::Cyan)
                         } else {
                             Style::default()
                         };
@@ -76,8 +84,18 @@ impl App {
 
                 let table = Table::new(rows, &[Constraint::Length(5), Constraint::Min(20)])
                     .column_spacing(1);
+                frame.render_widget(table, chunks[0]);
 
-                frame.render_widget(table, area);
+                // Render instructions at the bottom
+                let instructions = Paragraph::new(vec![Line::from(vec![
+                    Span::raw("<Enter>: select, "),
+                    Span::raw("q: quit, "),
+                    Span::raw("j/k: navigate, "),
+                    Span::raw("{/}: skip page, "),
+                    Span::raw("G/g: first or last command"),
+                ])])
+                .style(Style::default().fg(Color::DarkGray));
+                frame.render_widget(instructions, chunks[1]);
             })?;
 
             if let Event::Key(key) = event::read()? {
