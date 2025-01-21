@@ -32,7 +32,6 @@ impl App {
     }
 
     pub fn run(&mut self) -> io::Result<Option<String>> {
-        // Set up terminal
         enable_raw_mode()?;
         let mut stdout = stdout();
         execute!(stdout, EnterAlternateScreen)?;
@@ -41,7 +40,6 @@ impl App {
 
         let result = self.run_app(&mut terminal);
 
-        // Restore terminal
         disable_raw_mode()?;
         execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
         terminal.show_cursor()?;

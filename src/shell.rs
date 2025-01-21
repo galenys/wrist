@@ -7,7 +7,6 @@ use std::{
 
 use dirs::home_dir;
 
-#[derive(Debug)]
 pub enum Shell {
     Fish,
     Bash,
