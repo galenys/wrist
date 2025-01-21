@@ -10,7 +10,10 @@ use ratatui::{
     widgets::{Row, Table},
     Terminal,
 };
-use std::io::{self, stdout};
+use std::{
+    cmp::{max, min},
+    io::{self, stdout},
+};
 pub struct App {
     commands: Vec<String>,
     selected_idx: usize, // Index of command that should be at bottom of screen
@@ -54,18 +57,14 @@ impl App {
                 let area = frame.area();
                 let height = area.height as usize;
 
-                // Calculate which commands should be visible
-                let end_idx = self.selected_idx + 1; // +1 because ranges are exclusive
-                let start_idx = end_idx.saturating_sub(height);
+                let start_idx = self.selected_idx.saturating_sub(height - 1);
+                let end_idx = start_idx + height;
 
                 let rows: Vec<Row> = self.commands[start_idx..end_idx]
                     .iter()
                     .enumerate()
                     .map(|(i, cmd)| {
-                        let index = self
-                            .num_commands
-                            .saturating_sub(start_idx + i + 1)
-                            .to_string();
+                        let index = self.num_commands.saturating_sub(start_idx + i).to_string();
                         let style = if start_idx + i == self.selected_idx {
                             Style::default().bg(Color::Gray)
                         } else {
@@ -92,6 +91,18 @@ impl App {
                         if self.selected_idx > 0 {
                             self.selected_idx -= 1;
                         }
+                    }
+                    KeyCode::Char('}') => {
+                        self.selected_idx = min(
+                            self.selected_idx + terminal.size()?.height as usize - 2,
+                            self.num_commands - 1,
+                        );
+                    }
+                    KeyCode::Char('{') => {
+                        self.selected_idx = max(
+                            self.selected_idx as isize - terminal.size()?.height as isize + 2,
+                            0,
+                        ) as usize;
                     }
                     KeyCode::Char('g') => {
                         self.selected_idx = 0;
