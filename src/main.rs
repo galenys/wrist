@@ -12,7 +12,6 @@ fn main() {
     match app.run() {
         Ok(Some(selected_command)) => {
             println!("Copied command: {}", selected_command);
-            // Copy the selected command to clipboard
             if let Ok(mut ctx) = ClipboardContext::new() {
                 let _ = ctx.set_contents(selected_command);
             }

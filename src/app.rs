@@ -17,7 +17,7 @@ use std::{
 };
 pub struct App {
     commands: Vec<String>,
-    selected_idx: usize, // Index of command that should be at bottom of screen
+    selected_idx: usize,
     num_commands: usize,
 }
 
@@ -26,7 +26,7 @@ impl App {
         let num_commands = commands.len();
         App {
             commands,
-            selected_idx: num_commands - 1, // Start with most recent command
+            selected_idx: num_commands - 1,
             num_commands,
         }
     }
@@ -57,10 +57,7 @@ impl App {
             terminal.draw(|frame| {
                 let chunks = Layout::default()
                     .direction(Direction::Vertical)
-                    .constraints([
-                        Constraint::Min(3),    // Table takes minimum space needed
-                        Constraint::Length(1), // Instructions take 2 rows
-                    ])
+                    .constraints([Constraint::Min(3), Constraint::Length(1)])
                     .split(frame.area());
 
                 let height = chunks[0].height as usize;
@@ -86,7 +83,6 @@ impl App {
                     .column_spacing(1);
                 frame.render_widget(table, chunks[0]);
 
-                // Render instructions at the bottom
                 let instructions = Paragraph::new(vec![Line::from(vec![
                     Span::raw("<Enter>: select, "),
                     Span::raw("q: quit, "),
